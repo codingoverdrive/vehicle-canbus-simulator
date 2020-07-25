@@ -1,0 +1,1 @@
+char *all_canlog_tests();
