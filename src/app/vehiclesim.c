@@ -16,9 +16,21 @@
 #include "../include/util.h"
 
 #define VERSION "v1.0.1"
+#define DEFAULT_LOOPS 1
 
 void printCommandLineOptions(char *progName) {
   fprintf(stderr, "\nUsage: %s <options> logfile\n\n", progName);
+  fprintf(stderr, "Options:      -c <canbus>  "
+    "(default is can0)\n");
+	fprintf(stderr, "              -l <num>     "
+		"(process input file <num> times, default=1)\n");
+  fprintf(stderr, "              -i           "
+   	"(infinite or loop forever)\n");
+  fprintf(stderr, "              -t           "
+    "(ignore timestamps and send frames with no delay)\n");
+  fprintf(stderr, "              -m <ms>     "
+    "(skip gaps in timestamps > 'ms' milliseconds)\n");
+  fprintf(stderr, "\n");
 }
 
 int openCanSocket(int *canSocket, int loopback_disable) {
@@ -47,7 +59,7 @@ int bindSocket(int socket, char *ifName, struct sockaddr_can *addr) {
 
   strcpy(ifr.ifr_name, ifName);
 	if (ioctl(socket, SIOCGIFINDEX, &ifr) < 0) {
-		perror("bindSocket: SIOCGIFINDEX");
+		fprintf(stderr, "bindSocket: SIOCGIFINDEX for %s\n", ifName);
 		return 1;
 	}
 
@@ -66,17 +78,24 @@ int bindSocket(int socket, char *ifName, struct sockaddr_can *addr) {
 int sendCanFrameToSocket(int socket, CanFrame *canFrame) {
   // long numBytes = sendto(socket, &canFrame, sizeof(CanFrame), 0,
   //     (struct sockaddr*)&addr, sizeof(addr));
-  int maxLoops = 100;
-  while (maxLoops-- > 0) {
-    long numBytes = write(socket, canFrame, sizeof(CanFrame));
-    // printf("Bytes sent: %d\n", numBytes);
+  int dataSize = sizeof(CanFrame);
+  long numBytes = 0;
+  int maxRetries = 100;
+  while (maxRetries-- > 0) {
+    numBytes = write(socket, canFrame, dataSize);
+    printf("Bytes sent: %d %d\n", numBytes, errno);
     if (numBytes < 0 && errno == ENOBUFS) {
-      usleep(10000);
+      fprintf(stderr, ".");
+      usleep(50000);
     }
-    else if (numBytes != sizeof(CanFrame)) {
-      perror("Cannot write to CAN socket");
+    else {
+      break;
+    }
+  }
+
+  if (numBytes != dataSize) {
+      perror("Cannot write to socket");
       return 1;
-    }
   }
 
   return 0;
@@ -107,6 +126,55 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  // command line options
+  static char ifname[32] = "can0";
+  static int opt = 0;
+  static int verbose; // show frames as they are sent
+  static int infiniteLoops = 0; // loop forever
+  static int loops = 0;         // specify a set number of loops
+  static int ignoreTimestamp = 0; // ignore time between frames, send without delay
+  static int maxDelayMS = 0; // the maximum delay allowed between frames
+
+  // process command line options
+  while ((opt = getopt(argc, argv, "ivtm:l:c:")) != -1) {
+    switch (opt) {
+    case 'c':
+      strcpy(ifname, optarg);
+      break;
+    case 'i':
+      infiniteLoops = 1;
+      break;
+    case 'l':
+      if (!(loops = atoi(optarg))) {
+					fprintf(stderr, "Invalid numeric argument for option -l !\n");
+					return 1;
+			}
+      break;
+    case 'v':
+      verbose = 1;
+      break;
+    case 'm':
+      if (!(maxDelayMS = atoi(optarg))) {
+					fprintf(stderr, "Invalid numeric argument for option -s !\n");
+					return 1;
+			}
+      break;
+    case 't':
+      ignoreTimestamp = 1;
+      break;
+    default:
+      printCommandLineOptions(basename(argv[0]));
+      return 1;
+      break;
+    }    
+  }
+
+  // ensure that we loop correctly
+  if (loops > 0)
+    infiniteLoops = 0;
+  else if (loops < DEFAULT_LOOPS)
+    loops = DEFAULT_LOOPS;
+
   char *filepath = "./logs/sample-log.asc"; // TODO get this from arguments
   // char *filepath = "./logs/jsw.asc"; // TODO get this from arguments
   FILE *logFP = fopen(filepath, "r");
@@ -119,11 +187,11 @@ int main(int argc, char *argv[]) {
   int disableLoopback = 1;
   if (openCanSocket(&canSocket, disableLoopback) > 0)
     return 1;
-  printf("canSocket %d\n",canSocket);
+  // printf("canSocket %d\n",canSocket);
   struct sockaddr_can canAddr;
-  printf("canAddr %d %d\n", sizeof(canAddr), sizeof(struct sockaddr_can));
-  //TODO get can interface from arguments
-  if (bindSocket(canSocket, "can0", &canAddr) > 0) 
+  if (verbose)
+    printf("Interface: %s\n", ifname);
+  if (bindSocket(canSocket, ifname, &canAddr) > 0) 
       return 1;
 
   struct timeval lastTime, nowTime, lastFrameTime;
@@ -131,10 +199,10 @@ int main(int argc, char *argv[]) {
   lastFrameTime.tv_sec = 0;
   lastFrameTime.tv_usec = 0;
 
-  int logFrames = 1; //TODO get this from arguments
-  int infiniteLoops = 0; // TODO get this from arguments
-  int loops = 1;         // TODO get this from arguments
+  int loopCounter = 0;
   while (keepRunning && (infiniteLoops || loops--)) {
+    if (verbose)
+      fprintf(stderr, "--- loop: %d ---\n", ++loopCounter);
     rewind(logFP);
 
     char *line = malloc(128);
@@ -147,15 +215,17 @@ int main(int argc, char *argv[]) {
         continue;
 
       // fprintf(stderr, "%s", line);
-
       gettimeofday(&nowTime, NULL);
-      if (lastFrameTime.tv_sec != 0 && lastFrameTime.tv_usec != 0) {
+      if (!ignoreTimestamp && lastFrameTime.tv_sec != 0 && lastFrameTime.tv_usec != 0) {
         // printf("LAST> %ld.%ld\n", lastTime.tv_sec, lastTime.tv_usec);
         // printf("NOW> %ld.%ld\n", nowTime.tv_sec, nowTime.tv_usec);
         unsigned long elapsedTime = deltaTimeMs(nowTime, lastTime);
         unsigned long frameDeltaTime = deltaTimeMs(canMsg.time, lastFrameTime);
         long sleepTimeMS = frameDeltaTime - elapsedTime;
         // fprintf(stderr, "%d %d SLEEP %d\n", elapsedTime, frameDeltaTime, sleepTimeMS);
+        if (maxDelayMS && sleepTimeMS > maxDelayMS) {
+          sleepTimeMS = maxDelayMS;
+        }
         if (sleepTimeMS > 0) {
           usleep(1000 * sleepTimeMS);
           gettimeofday(&nowTime, NULL);
@@ -163,7 +233,7 @@ int main(int argc, char *argv[]) {
       }
 
       canMessage2Frame(&canMsg, &canFrame);
-      if (logFrames)
+      if (verbose)
         debugCanFrame(&canFrame);
       if (sendCanFrameToSocket(canSocket, &canFrame) == 1) {
         fprintf(stderr, "\nAborting\n");
@@ -178,7 +248,7 @@ int main(int argc, char *argv[]) {
   closeSocket(canSocket);
   fclose(logFP);
 
-  fprintf(stderr, "\nStopping\n");
+  fprintf(stderr, "\nStopping\n\n");
 
   return 0;
 }

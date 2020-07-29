@@ -52,11 +52,11 @@ static void debugArrayHexBytes(char *prefixStr, uint8_t *bytes, int len) {
   if (prefixStr)
     printf("%s ", prefixStr);
   for (size_t i = 0; i < len; i++)
-    printf("0x%02X ", bytes[i]);
+    printf("%02X ", bytes[i]);
   printf("\n");
 }
 
 void debugCanFrame(CanFrame *canFrame) {
-  printf("0x%03X : %d : ", canFrame->id, canFrame->dlc);
+  printf("%03X : %d : ", canFrame->id, canFrame->dlc);
   debugArrayHexBytes(NULL, canFrame->data, canFrame->dlc);
 }
