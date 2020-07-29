@@ -83,9 +83,9 @@ int sendCanFrameToSocket(int socket, CanFrame *canFrame) {
   int maxRetries = 100;
   while (maxRetries-- > 0) {
     numBytes = write(socket, canFrame, dataSize);
-    printf("Bytes sent: %d %d\n", numBytes, errno);
+    // printf("Bytes sent: %d %d\n", numBytes, errno);
     if (numBytes < 0 && errno == ENOBUFS) {
-      fprintf(stderr, ".");
+      // fprintf(stderr, ".");
       usleep(50000);
     }
     else {
@@ -175,11 +175,19 @@ int main(int argc, char *argv[]) {
   else if (loops < DEFAULT_LOOPS)
     loops = DEFAULT_LOOPS;
 
-  char *filepath = "./logs/sample-log.asc"; // TODO get this from arguments
-  // char *filepath = "./logs/jsw.asc"; // TODO get this from arguments
+  // log file should be last argument on command line
+  char filepath[128];
+  // fprintf(stderr, "%d %s\n", optind, argv[optind]);
+  if (argv[optind] == NULL) {
+    fprintf(stderr, "No long file specified\n");
+    printCommandLineOptions(basename(argv[0]));
+    return 1;
+  }
+
+  strcpy(filepath, argv[optind]);
   FILE *logFP = fopen(filepath, "r");
   if (logFP == NULL) {
-    perror("Failed to open log file");
+    fprintf(stderr, "Failed to open specified log file %s\n\n", filepath);
     return 1;
   }
 
