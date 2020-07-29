@@ -15,7 +15,7 @@ CFLAGS =-I./src/include -I./test/include
 LDFLAGS =-v #-lGL -lglut -lpng -lz -lm
 
 TESTRUNNER = ./bin/testrunner
-APP = ./bin/app
+APP = ./bin/cansim
 
 testrunner: $(obj_test)
 	$(CC) $(CFLAGS) -o bin/$@ $^ $(LDFLAGS)
@@ -24,7 +24,7 @@ test: testrunner
 	$(TESTRUNNER)
 
 app: $(obj_app)
-	$(CC) $(CFLAGS) -o bin/$@ $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o bin/cansim $^ $(LDFLAGS)
 
 all: clean test app
 

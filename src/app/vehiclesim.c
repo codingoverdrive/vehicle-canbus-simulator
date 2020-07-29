@@ -28,7 +28,7 @@ void printCommandLineOptions(char *progName) {
    	"(infinite or loop forever)\n");
   fprintf(stderr, "              -t           "
     "(ignore timestamps and send frames with no delay)\n");
-  fprintf(stderr, "              -m <ms>     "
+  fprintf(stderr, "              -m <ms>      "
     "(skip gaps in timestamps > 'ms' milliseconds)\n");
   fprintf(stderr, "\n");
 }

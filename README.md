@@ -44,31 +44,49 @@ ip link set can0 type can bitrate 500000
 ifconfig can0 up
 ```
 
+## Replaying Log Files
+
+The purpose of this application is to "replay" log files obtained from your vehicle. This allows you to develop CANBUS applications without being physically connected to the vehicle.
+
+This app currently ONLY supports the (Vector) *.asc CANBUS log file format. Note it may support other file formats in the future. These files are formatted like this:
+
+```
+date Wed Oct 2 12:10:32 am 2018
+base hex timestamps absolute
+Begin Triggerblock Wed Oct 2 12:10:32 am 2018
+
+ 1.372237 1  3A2        Rx D 8  AB  04  00  00  00  00  00  00
+ 1.372976 1  3E8        Rx D 8  02  00  00  00  00  00  00  00
+ ...
+```
+
+Note only `absolute` timestamps are currently supported; `relative` timestamps may be supported in a future release.
+
 ## Launching the application
 
-The app supports various switches to control its behavior.
-
-If you pass no parameters then the application will look for a log file called `sample.asc` in the same folder as the application.
-
-It will replay the log file in a loop until you kill the app using Ctrl-C.
+Launch on the command line using a terminal (window) with path to the log file that you want to replay.
 
 ```
-./cansimulator
+./cansim ../logs/sample-log.asc
 ```
 
-### App Switches
-
-The following command line options are supported
+The following command line options are also supported
 
 ```
--l on / off - looping on or off
--f logfile  - the name of the logfile to read
--t on / off - if on then honour the timings from the log file
--d delay - if -t is off then sets delay in ms between messages
+Usage: ./bin/./cansimulator <options> logfile
+
+      -c <canbus>  (default is can0)
+      -l <num>     (process input file <num> times, default=1)
+      -i           (infinite or loop forever)
+      -t           (ignore timestamps and send frames with no delay)
+      -m <ms>      (skip gaps in timestamps > 'ms' milliseconds)
 ```
+
+Use the options above to control how long the frames will play for, and use Ctrl-C to abort/exit the application.
+
 
 # Test and Build
-You will need to have the standard C build tools installed in order to test and build the app for yourself.
+If you want, you can modify, test and build the app yourself provided you have the standard C build tools installed.
 
 ## Unit Tests
 
@@ -84,7 +102,7 @@ The output will indicate whether the tests ran sucessfully or not.
 To build the app, use the following command:
 
 ```
-make clean build
+make clean app
 ```
 
-This will create an executable called `XXXXX` in the bin directory
+This will create an executable called `cansim` in the `bin` directory of the project.
