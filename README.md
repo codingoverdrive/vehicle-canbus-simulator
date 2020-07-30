@@ -3,7 +3,7 @@ This project allow you to playback CANBUS messages over a local network to aid d
 
 It currently supports (Vector's) `*.asc` CANBUS log files as these are compact and include timing information. (See sample below or [the log file included in this project](./logs/sample-log.asc)
 
-The code is designed to run on unix machines, including the Raspberry Pi. It relies on SocketCAN documented at https://github.com/linux-can/can-utils which makes your CANBUS device available as a standard socket network device. Unfortunately, this code will not work on Mac OSX because can-utils is not supported on OSX.
+The code is designed to run on unix machines, including the Raspberry Pi. It relies on SocketCAN documented at https://github.com/linux-can/can-utils which makes your CANBUS device available as a standard socket network device. Unfortunately, this code will not work on macOS because can-utils is not supported on OSX.
 
 ## CANBUS Networks
 A CANBUS network is a two wire network which requires a minimum of two nodes. There can be (many) more than two. There is no concept of master or slave; each node on the network is a peer of the others.
@@ -12,21 +12,21 @@ The network works using differential voltage signalling on two wires; normally d
 
 ![](./doc/basic-canbus.png "Basic CANBUS network")
 
-Nodes transmit and receive messages at upto 1Mbps. Tesla's CANBUS networks typically run at 500kbps with around 1-2k messages per second transmitted on the bus.
+Nodes transmit and receive messages at up to 1Mbps. Tesla's CANBUS networks typically run at 500kbps with around 1-2k messages per second transmitted on the bus.
 
 See https://en.wikipedia.org/wiki/CAN_bus for more information.
 
 ## Hardware Requirements
 The Vehicle Canbus Simulator application requires a USB connected CANBUS transceiver to work. Without it the application is unable to transmit messages from the log file to the CANBUS.
 
-Sample set up using two raspberry Pi's and two USB-CANBUS boards (from Inno-maker).
+Sample set up using two Raspberry Pi's and two USB-CANBUS boards (from Inno-maker).
 
 ![](./doc/CanBus-Setup.jpg "Canbus setup")
 
-It is possible to use a single raspberry Pi by connecting the two USBs to the pi. You will then need to configure both `can0` and `can1` on the device. Note that a single pi may struggle to send/receive messages without dropping frames at higher CANBUS bit rates.
+It is possible to use a single Raspberry Pi by connecting the two USBs to the pi. You will then need to configure both `can0` and `can1` on the device. Note that a single pi may struggle to send/receive messages without dropping frames at higher CANBUS bit rates.
 
 ## Installing Dependencies
-For Debian based distros (including the Raspberry Pi), you will need to install `can-utils` on the computer hosting the Vehicle Canbus Simulator application. This is simple to do with the standard raspbian images (based on Debian).
+For Debian based distros (including the Raspberry Pi), you will need to install `can-utils` on the computer hosting the Vehicle Canbus Simulator application. This is simple to do with the standard Raspbian images (based on Debian).
 
 ```
 apt-get install can-utils
@@ -36,7 +36,7 @@ Then connect your CANBUS device to the USB port of the computer.
 
 ## Configuring the CANBUS
 
-You will need to configure the CANBUS before starting the Can Simulator App. 
+You will need to configure the CANBUS before starting the CAN Simulator App. 
 
 ```
 # configure CAN0 with bitrate set to 500kbps
@@ -64,7 +64,7 @@ Begin Triggerblock Wed Oct 2 12:10:32 am 2018
 
 Note only `absolute` timestamps are currently supported; `relative` timestamps may be supported in a future release.
 
-## Launching the application
+## Launching the Application
 
 Launch on the command line using a terminal (window) with path to the log file that you want to replay.
 
@@ -75,7 +75,7 @@ Launch on the command line using a terminal (window) with path to the log file t
 The following command line options are also supported
 
 ```
-Usage: ./bin/./cansimulator <options> logfile
+Usage: ./bin/cansim <options> logfile
 
       -c <canbus>  (default is can0)
       -l <num>     (process input file <num> times, default=1)
