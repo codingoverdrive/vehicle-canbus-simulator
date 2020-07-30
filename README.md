@@ -1,14 +1,16 @@
 # Vehicle Canbus Simulator
 This project allow you to playback CANBUS messages over a local network to aid development without requiring access to a vehicle.
 
-It currently supports (Vetor's) `*.asc` CANBUS log files as these are compact and include timing information.
+It currently supports (Vector's) `*.asc` CANBUS log files as these are compact and include timing information. (See sample below or [the log file included in this project](./logs/sample-log.asc)
 
-The code is designed to run on unix machines, including the Raspberry Pi. It relies on SocketCAN documented at https://github.com/linux-can/can-utils which makes your CANBUS device available as a standard socket network device. Unfortunately, this code will not work on Mac OSX because can-utils does not work on OSX.
+The code is designed to run on unix machines, including the Raspberry Pi. It relies on SocketCAN documented at https://github.com/linux-can/can-utils which makes your CANBUS device available as a standard socket network device. Unfortunately, this code will not work on Mac OSX because can-utils is not supported on OSX.
 
 ## CANBUS Networks
-A CANBUS network is a two wire network which requires a minimum of two nodes. There is no concept of master or slave; each node on the network is a peer of the others.
+A CANBUS network is a two wire network which requires a minimum of two nodes. There can be (many) more than two. There is no concept of master or slave; each node on the network is a peer of the others.
 
 The network works using differential voltage signalling on two wires; normally designated CAN-H and CAN-L. The network also requires a termination resistor (typically 120 ohm) at each end to avoid signal reflection.
+
+![](./doc/basic-canbus.png "Basic CANBUS network")
 
 Nodes transmit and receive messages at upto 1Mbps. Tesla's CANBUS networks typically run at 500kbps with around 1-2k messages per second transmitted on the bus.
 
@@ -83,6 +85,10 @@ Usage: ./bin/./cansimulator <options> logfile
 ```
 
 Use the options above to control how long the frames will play for, and use Ctrl-C to abort/exit the application.
+
+Check this out to see the Simulator in action.
+
+[![Watch the video](https://i.vimeocdn.com/video/931838566_1280x720.jpg)](https://player.vimeo.com/video/442717525)
 
 
 # Test and Build
