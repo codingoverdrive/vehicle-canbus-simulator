@@ -2,13 +2,12 @@
 .PHONY: test
 
 # Build Test artifacts
-src_test = $(wildcard src/*.c) \
+src_test = $(filter-out src/vehiclesim.c, $(wildcard src/*.c)) \
            $(wildcard test/*.c)
 obj_test = $(src_test:.c=.o)
 
 # Build app artifacts
-src_app = $(wildcard src/*.c) \
-          $(wildcard src/app/*.c)
+src_app = $(wildcard src/*.c) 
 obj_app = $(src_app:.c=.o)
 
 CFLAGS =-I./src/include -I./test/include
@@ -24,7 +23,7 @@ test: testrunner
 	$(TESTRUNNER)
 
 app: $(obj_app)
-	$(CC) $(CFLAGS) -o bin/cansim $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(APP) $^ $(LDFLAGS)
 
 all: clean test app
 
