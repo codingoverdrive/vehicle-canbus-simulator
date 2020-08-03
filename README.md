@@ -50,7 +50,13 @@ ifconfig can0 up
 
 The purpose of this application is to "replay" log files obtained from your vehicle. This allows you to develop CANBUS applications without being physically connected to the vehicle.
 
-This app currently ONLY supports the (Vector) *.asc CANBUS log file format. Note it may support other file formats in the future. These files are formatted like this:
+You do this by launching the `cansim` app and replaying a log file from the same computer that the app is running on. The messages from the log file are then transmitted over the CANBUS network. 
+
+Normally the computer and `cansim` app are one node of the CANBUS network. You will need at least one other node on the network for the messages to be transmitted.
+
+The `cansim` app currently ONLY supports the (Vector) *.asc CANBUS log file format. Note it may support other file formats in the future. 
+
+These files are formatted like this:
 
 ```
 date Wed Oct 2 12:10:32 am 2018

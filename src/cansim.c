@@ -24,18 +24,6 @@
 #define VERSION "v1.0.1"
 #define DEFAULT_LOOPS 1
 
-// // open the log file
-// FILE *openLogFile(char *filepath) {
-//   FILE *fp;
-//   fp = fopen(filepath, "r");
-//   if (fp == NULL) {
-//     perror("openLogFile: Failed to open file");
-//     return NULL;
-//   }
-
-//   return fp;
-// }
-
 int main(int argc, char *argv[]) {
   fprintf(stderr, "\nVehicle Canbus Simulator %s\n", VERSION);
 
