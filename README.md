@@ -94,11 +94,6 @@ Usage: ./bin/cansim <options> logfile
 
 Use the options above to control how long the frames will play for, and use Ctrl-C to abort/exit the application.
 
-Check this out to see the Simulator in action.
-
-[![Watch the video](https://i.vimeocdn.com/video/931838566_1280x720.jpg)](https://player.vimeo.com/video/442717525)
-
-
 # Test and Build
 If you want, you can modify, test and build the app yourself provided you have the standard C build tools installed.
 
